@@ -33,4 +33,35 @@ const register = async (req, res) => {
   }
 };
 
-module.exports = { register };
+const login = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(401).json({
+        message: "User not exists please register",
+        success: false,
+      });
+    }
+
+    const isPasswordMatch = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordMatch) {
+      return res.status(401).json({
+        message: "Incorrect Password",
+        success: false,
+      });
+    }
+    return res.status(200).json({
+      message: "User Login Successfully",
+      success: true,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server Error",
+      success: false,
+    });
+  }
+};
+
+module.exports = { register, login };
