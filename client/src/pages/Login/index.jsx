@@ -1,13 +1,19 @@
 import React from "react";
 import { Button, Form, Input, message } from "antd";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { login } from "../../api/auth";
+import { useDispatch } from "react-redux";
+import { setUserData } from "../../redux/userSlice";
 const Login = () => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const onFinish = async (values) => {
     try {
       const userData = await login(values);
       if (userData.success) {
         message.success(userData.message);
+        dispatch(setUserData(userData.user));
+        navigate("/home");
       } else {
         message.error(userData.message);
       }

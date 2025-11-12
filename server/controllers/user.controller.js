@@ -1,5 +1,7 @@
 const User = require("../models/user.model");
 const bcrypt = require("bcryptjs");
+const { json } = require("express");
+const jwt = require("jsonwebtoken");
 
 const register = async (req, res) => {
   try {
@@ -52,9 +54,18 @@ const login = async (req, res) => {
         success: false,
       });
     }
+
+    const token = jwt.sign({userId: user._id}, process.env.JWT_KEY, {expiresIn: "10d"});
+      res.cookie("jwtToken", token, {
+        httpOnly: true,               // prevents JS access to cookie (secure)
+        secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+        sameSite: "strict",           // helps prevent CSRF
+        maxAge: 10 * 24 * 60 * 60 * 1000, // 10 days in ms
+      });
     return res.status(200).json({
       message: "User Login Successfully",
       success: true,
+      token: token,
     });
   } catch (error) {
     res.status(500).json({
@@ -64,4 +75,9 @@ const login = async (req, res) => {
   }
 };
 
-module.exports = { register, login };
+const getUser = async (req, res) => {
+  const userId =  req.userId
+   res.send({userId : userId})
+}
+
+module.exports = { register, login, getUser };
